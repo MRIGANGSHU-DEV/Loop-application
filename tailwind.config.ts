@@ -26,7 +26,7 @@ const config = {
           4: '#1E2757',
         },
         blue: {
-          1: '#0E78F9',
+          1: '#5736B9',
         },
         sky: {
           1: '#C9DDFF',
@@ -34,13 +34,13 @@ const config = {
           3: '#F5FCFF',
         },
         orange: {
-          1: '#FF742E',
+          1: '#890EB4',
         },
         purple: {
-          1: '#830EF9',
+          1: '#8F44A9',
         },
         yellow: {
-          1: '#F9A90E',
+          1: '#4F219D',
         },
       },
       keyframes: {

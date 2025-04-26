@@ -1,17 +1,20 @@
 "use client";
 
 import Image from "next/image";
-
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { avatarImages } from "@/constants";
 import { useToast } from "./ui/use-toast";
+import { useState } from "react"; // 👈 ADD this import
+import axios from "axios";
+
 
 interface MeetingCardProps {
   title: string;
   date: string;
   icon: string;
   isPreviousMeeting?: boolean;
+  isRecording?: boolean;
   buttonIcon1?: string;
   buttonText?: string;
   handleClick: () => void;
@@ -23,12 +26,81 @@ const MeetingCard = ({
   title,
   date,
   isPreviousMeeting,
+  isRecording,
   buttonIcon1,
   handleClick,
   link,
   buttonText,
 }: MeetingCardProps) => {
   const { toast } = useToast();
+
+  // 👇 Add these states for controlling button text
+  const [transcriptButtonText, setTranscriptButtonText] = useState("Transcript");
+  const [summaryButtonText, setSummaryButtonText] = useState("Summary");
+
+  const [transcriptUrl, setTranscriptUrl] = useState("");
+  const [summaryUrl, setSummaryUrl] = useState("");
+
+  // 👇 Empty function handlers (will fill logic later)
+  const handleTranscriptClick = async () => {
+    if (transcriptButtonText === "Download" && transcriptUrl) {
+      window.open(transcriptUrl, "_blank");
+      return;
+    }
+  
+    setTranscriptButtonText("Processing...");
+  
+    try {
+      const response = await axios.post("https://meeting-processing-server.onrender.com/api/transcript", {
+        url: link},
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+      });
+  
+      console.log("Transcript Response:", response.data); // 👈 important
+  
+      if (response.data.success) {
+        setTranscriptUrl(response.data.downloadUrl);
+        setTranscriptButtonText("Download");
+      } else {
+        setTranscriptButtonText("Failed");
+      }
+    } catch (error) {
+      console.error("Transcript error:", error);
+      setTranscriptButtonText("Failed");
+    }
+  };
+
+  const handleSummaryClick = async () => {
+    if (summaryButtonText === "Download" && summaryUrl) {
+      window.open(summaryUrl, "_blank");
+      return;
+    }
+  
+    setSummaryButtonText("Processing...");
+  
+    try {
+      const response = await fetch("https://meeting-processing-server.onrender.com/api/summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: link }), // Using the meeting link
+      });
+  
+      const data = await response.json();
+  
+      if (data.success) {
+        setSummaryUrl(data.downloadUrl);
+        setSummaryButtonText("Download");
+      } else {
+        setSummaryButtonText("Failed");
+      }
+    } catch (error) {
+      console.error("Summary error:", error);
+      setSummaryButtonText("Failed");
+    }
+  };
 
   return (
     <section className="flex min-h-[258px] w-full flex-col justify-between rounded-[14px] bg-dark-1 px-5 py-8 xl:max-w-[568px]">
@@ -41,23 +113,27 @@ const MeetingCard = ({
           </div>
         </div>
       </article>
+
       <article className={cn("flex justify-center relative", {})}>
-        <div className="relative flex w-full max-sm:hidden">
-          {avatarImages.map((img, index) => (
-            <Image
-              key={index}
-              src={img}
-              alt="attendees"
-              width={40}
-              height={40}
-              className={cn("rounded-full", { absolute: index > 0 })}
-              style={{ top: 0, left: index * 28 }}
-            />
-          ))}
-          <div className="flex-center absolute left-[136px] size-10 rounded-full border-[5px] border-dark-3 bg-dark-4">
-            +5
+        {!isRecording && (
+          <div className="relative flex w-full max-sm:hidden">
+            {avatarImages.map((img, index) => (
+              <Image
+                key={index}
+                src={img}
+                alt="attendees"
+                width={40}
+                height={40}
+                className={cn("rounded-full", { absolute: index > 0 })}
+                style={{ top: 0, left: index * 28 }}
+              />
+            ))}
+            <div className="flex-center absolute left-[136px] size-10 rounded-full border-[5px] border-dark-3 bg-dark-4">
+              +5
+            </div>
           </div>
-        </div>
+        )}
+
         {!isPreviousMeeting && (
           <div className="flex gap-2">
             <Button onClick={handleClick} className="rounded bg-blue-1 px-6">
@@ -66,6 +142,7 @@ const MeetingCard = ({
               )}
               &nbsp; {buttonText}
             </Button>
+
             <Button
               onClick={() => {
                 navigator.clipboard.writeText(link);
@@ -82,6 +159,16 @@ const MeetingCard = ({
                 height={20}
               />
               &nbsp; Copy Link
+            </Button>
+
+            {/* 👇 Transcript Button */}
+            <Button onClick={handleTranscriptClick} className="bg-dark-4 px-6">
+              {transcriptButtonText}
+            </Button>
+
+            {/* 👇 Summary Button */}
+            <Button onClick={handleSummaryClick} className="bg-dark-4 px-6">
+              {summaryButtonText}
             </Button>
           </div>
         )}
