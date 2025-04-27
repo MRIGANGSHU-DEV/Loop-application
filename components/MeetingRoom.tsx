@@ -49,6 +49,11 @@ const MeetingRoom = () => {
     }
   };
 
+  const openAttendanceUrl = () => {
+    // Replace this URL with your actual attendance tracking URL
+    window.open('https://www.google.com', '_blank');
+  };
+
   return (
     <section className="relative h-screen w-full overflow-hidden pt-4 text-white">
       <div className="relative flex size-full items-center justify-center">
@@ -94,6 +99,13 @@ const MeetingRoom = () => {
             <Users size={20} className="text-white" />
           </div>
         </button>
+
+        <button onClick={openAttendanceUrl}>
+          <div className="cursor-pointer rounded-2xl bg-[#19232d] px-4 py-2 hover:bg-[#4c535b]">
+            Attendance
+          </div>
+        </button>
+
         {!isPersonalRoom && <EndCallButton />}
       </div>
     </section>
