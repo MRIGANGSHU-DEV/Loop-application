@@ -51,7 +51,7 @@ const MeetingRoom = () => {
 
   const openAttendanceUrl = () => {
     // Replace this URL with your actual attendance tracking URL
-    window.open('http://192.168.149.97:5000/', '_blank');
+    window.open('http://127.0.0.1:5000/', '_blank');
   };
 
   return (
